@@ -12,17 +12,18 @@ export const getOrCreateChat = async (req: Request, res: Response) => {
   if (!user2) return res.status(404).send("USER2 NOT FOUND");
   // if (!members || members !== 2)
   //   return res.status(400).json({ message: "MEMBERS MUST BE 2 USERS" });
+  const userId = await userModel.findOne({ clerkId: user1 });
   try {
     const chat = await chatModel.findOne({
       members: {
-        $all: [user1, user2],
+        $all: [userId?._id, user2],
         $size: 2,
       },
     });
     if (chat) return res.status(200).json({ OLD_ROOM: chat });
     if (!chat) {
       const newChat = await chatModel.create({
-        members: [user1, user2],
+        members: [userId?._id, user2],
       });
       return res.status(200).json({ NEW_ROOM: newChat });
     }
@@ -33,14 +34,14 @@ export const getOrCreateChat = async (req: Request, res: Response) => {
 };
 
 export const sendMessage = async (req: Request, res: Response) => {
-  const { chatId, senderId } = req.params;
+  const { chatId, clerkId } = req.params;
   const { text } = req.body;
   try {
-    const sender = await userModel.findById(senderId);
+    const sender = await userModel.findOne({ clerkId: clerkId });
     if (!sender) return res.status(404).json({ messsage: "SENDER NOT FOUND" });
     const message = await messageModel.create({
       chat: chatId,
-      senderId: senderId,
+      senderId: sender._id,
       text: text,
     });
     await chatModel.findByIdAndUpdate(chatId, {
@@ -51,7 +52,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     io.to(chatId).emit("newMessage", {
       _id: message._id,
       chat: chatId,
-      senderId,
+      clerkId,
       text,
       createdAt: message.createdAt,
     });

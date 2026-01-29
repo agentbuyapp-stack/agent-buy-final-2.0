@@ -1,17 +1,45 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2, X } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 type False = {
   handleFalseClick: () => void;
+  chatRoomId: string;
 };
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const ChatBot = (props: False) => {
   const [input, setInput] = useState("");
-  const { handleFalseClick } = props;
+  const { handleFalseClick, chatRoomId } = props;
+  const chatId = chatRoomId;
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const { user } = useUser();
+  const clerkId = user?.id;
+  console.log("CLERKID:", clerkId);
+
+  const sendMessage = async () => {
+    if (clerkId) return;
+    try {
+      await fetch(`${BACKEND_URL}/chat/${chatId}/senderId/${clerkId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          text: input,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  console.log("CHAT ROOM:", chatRoomId);
 
   useEffect(() => {
     scrollToBottom();
@@ -128,6 +156,7 @@ export const ChatBot = (props: False) => {
               disabled:cursor-not-allowed
               flex items-center justify-center 
               transition-all hover:scale-105 active:scale-95"
+              onClick={sendMessage}
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 min-[640px]:w-5 min-[640px]:h-5 text-white animate-spin" />
