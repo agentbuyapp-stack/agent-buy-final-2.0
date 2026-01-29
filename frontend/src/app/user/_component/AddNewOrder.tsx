@@ -1,19 +1,26 @@
 "use client";
 import { useState } from "react";
 import { Image, X } from "lucide-react";
-import { ReloadIcon } from "../_downIcon/ReloadIcon";
-import { useUser } from "@clerk/nextjs";
+
+type PreorderItem = {
+  productName: string;
+  description: string;
+  imageUrls: string[];
+};
+
 type Add = {
   handleFalseNewOrder: () => void;
+  handleAddToPreorder: (item: PreorderItem) => void;
 };
+
 type Station = {
   newOrderName: string;
   newOrderDescription: string;
   newOrderImages: string[];
 };
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export const AddNewOrder = (props: Add) => {
-  const { handleFalseNewOrder } = props;
+  const { handleFalseNewOrder, handleAddToPreorder } = props;
   const [orderImgs, setOrderImgs] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const handleOrderImgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,44 +40,28 @@ export const AddNewOrder = (props: Add) => {
     }
   };
 
-  const [loading, setLoading] = useState(false);
   const [addNewOrder, setAddNewOrder] = useState<Station>({
     newOrderName: "",
     newOrderDescription: "",
     newOrderImages: [],
   });
-  const { user } = useUser();
-  console.log("IMAGE URL:", orderImgs);
 
-  const handleAddNewOrder = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/user-orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          // Authorization: `Bearer`,
-        },
-        body: JSON.stringify({
-          clerkId: user?.id,
-          productName: addNewOrder.newOrderName,
-          description: addNewOrder.newOrderDescription,
-          imageUrls: orderImgs,
-        }),
-      });
-      if (res.ok) {
-        setAddNewOrder({
-          newOrderName: "",
-          newOrderDescription: "",
-          newOrderImages: [],
-        });
-        setLoading(false);
-        handleFalseNewOrder();
-      }
-    } catch (err) {
-      console.log(err);
-    }
+  const handleAddNewOrder = () => {
+    if (!addNewOrder.newOrderName.trim()) return;
+
+    handleAddToPreorder({
+      productName: addNewOrder.newOrderName,
+      description: addNewOrder.newOrderDescription,
+      imageUrls: orderImgs,
+    });
+
+    setAddNewOrder({
+      newOrderName: "",
+      newOrderDescription: "",
+      newOrderImages: [],
+    });
+    setOrderImgs([]);
+    handleFalseNewOrder();
   };
 
   return (
@@ -177,11 +168,11 @@ export const AddNewOrder = (props: Add) => {
         </div>
         <div className="w-full mt-auto">
           <button
-            className="w-full h-9 min-[640px]:h-10 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 rounded-lg flex justify-center items-center text-white text-[13px] min-[640px]:text-[14px] font-semibold cursor-pointer transition-all duration-200 ease-out hover:scale-105 active:scale-95 shadow-md hover:shadow-lg dark:shadow-blue-900/30"
+            className="w-full h-9 min-[640px]:h-10 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 rounded-lg flex justify-center items-center text-white text-[13px] min-[640px]:text-[14px] font-semibold cursor-pointer transition-all duration-200 ease-out hover:scale-105 active:scale-95 shadow-md hover:shadow-lg dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddNewOrder}
-            disabled={loading}
+            disabled={!addNewOrder.newOrderName.trim()}
           >
-            {loading ? <ReloadIcon /> : "Бараа нэмэх"}
+            Бараа нэмэх
           </button>
         </div>
       </div>

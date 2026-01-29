@@ -1,16 +1,39 @@
 "use client";
 import { Image, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
+type PreorderItem = {
+  id: string;
+  productName: string;
+  description: string;
+  imageUrls: string[];
+};
+
 type Edit = {
   handleFalseEditOrder: () => void;
+  editingItem: PreorderItem;
+  handleUpdatePreorder: (updatedItem: PreorderItem) => void;
 };
+
 export const EditOrder = (props: Edit) => {
-  const { handleFalseEditOrder } = props;
-  const [orderImgs, setOrderImgs] = useState<string[]>([]);
+  const { handleFalseEditOrder, editingItem, handleUpdatePreorder } = props;
+  const [orderImgs, setOrderImgs] = useState<string[]>(editingItem.imageUrls);
   const [uploading, setUploading] = useState(false);
-  const [newOrderName, setNewOrderName] = useState("");
-  const [newOrderDescription, setNewOrderDescription] = useState("");
-  const handleAddOrder = () => {};
+  const [newOrderName, setNewOrderName] = useState(editingItem.productName);
+  const [newOrderDescription, setNewOrderDescription] = useState(editingItem.description);
+
+  const handleSaveOrder = () => {
+    if (!newOrderName.trim()) return;
+
+    handleUpdatePreorder({
+      id: editingItem.id,
+      productName: newOrderName,
+      description: newOrderDescription,
+      imageUrls: orderImgs,
+    });
+    handleFalseEditOrder();
+  };
+
   const handleOrderImgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     if (!input.files || input.files.length === 0 || orderImgs.length >= 3)
@@ -29,22 +52,6 @@ export const EditOrder = (props: Edit) => {
       setUploading(false);
     }
   };
-  const [getOrderEdit, setGetOrderEdit] = useState();
-  const getData = async () => {
-    const data = await fetch("http://localhost:3000/api/user-orders", {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization: "bearer",
-      },
-    });
-    const jsonData = await data.json();
-    setGetOrderEdit(jsonData);
-    console.log(getOrderEdit, "get");
-  };
-  useEffect(() => {
-    getData();
-  }, []);
   return (
     <div className="fixed z-10 top-0 left-0 w-screen h-screen flex justify-center items-center bg-[rgba(0,0,0,0.2)] backdrop-blur-sm p-3 min-[640px]:p-4">
       <div className="w-full max-w-85 min-[640px]:max-w-lg bg-white dark:bg-gray-800 rounded-xl border shadow-xl flex flex-col justify-center items-center gap-3 min-[640px]:gap-4 p-4 min-[640px]:p-6">
@@ -146,7 +153,7 @@ export const EditOrder = (props: Edit) => {
         <div className="w-full mt-auto">
           <button
             className="w-full h-9 min-[640px]:h-10 bg-linear-to-r from-[#0b4ce5] to-[#4a90e2] hover:from-[#0a42c7] hover:to-[#3d7ec7] rounded-lg flex justify-center items-center text-white text-[13px] min-[640px]:text-[14px] font-semibold cursor-pointer transition-all duration-200 ease-out hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
-            onClick={handleAddOrder}
+            onClick={handleSaveOrder}
           >
             Хадгалах
           </button>
