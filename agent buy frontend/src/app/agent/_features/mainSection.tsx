@@ -9,7 +9,7 @@ export const MainSection = () => {
   const [openOrders, setOpenOrders] = useState([]);
   const status = "published";
   const openOrdersData = async () => {
-    console.log(status);
+    // console.log(status);
     try {
       const data = await (
         await fetch(`${BACKEND_URL}/api/user-orders/status/${status}`, {
@@ -24,7 +24,7 @@ export const MainSection = () => {
   useEffect(() => {
     openOrdersData();
   }, []);
-  console.log("OPEN ORDERS:", openOrders);
+  // console.log("OPEN ORDERS:", openOrders);
 
   return (
     <div className="w-full h-full flex flex-col gap-5 p-6 dark:bg-gray-900">

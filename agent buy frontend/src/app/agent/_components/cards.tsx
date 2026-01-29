@@ -5,6 +5,7 @@ import { PriceInf } from "./PriceInf";
 import { ShowReportAgent } from "./ShowReportAgent";
 import { OrderMoreReport } from "./OrderMoreReport";
 import { ChatBot } from "@/app/_components/ChatBot";
+import { useUser } from "@clerk/nextjs";
 
 type MyProps = {
   data: {
@@ -15,17 +16,32 @@ type MyProps = {
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const Card = ({ data }: MyProps) => {
-  // console.log("data:", data);
+  const { user } = useUser();
 
-  // const createChatRoom = async () => {
-  //   try {
-  //     await fetch(`${BACKEND_URL}/chat/createChatRoom`, {
+  const [chatRoom, setChatRoom] = useState([]);
 
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
+  const createChatRoom = async () => {
+    try {
+      const room = await (
+        await fetch(`${BACKEND_URL}/chat/createChatRoom`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          body: JSON.stringify({
+            members: [user?.id, data._id],
+          }),
+        })
+      ).json();
+      setChatRoom(room);
+      setChatBot(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // console.log(chatRoom, "dsvbiefbvierbfnvijerfbnvijefbns");
 
   const [sendReport, setSendReport] = useState(false);
   const handleSendReport = () => {
@@ -81,9 +97,7 @@ export const Card = ({ data }: MyProps) => {
           className="py-2 rounded-md text-xs font-semibold flex justify-center items-center cursor-pointer gap-1
     bg-purple-50 text-purple-600 hover:bg-purple-100 hover:scale-105
     dark:bg-purple-900 dark:text-purple-300 dark:hover:bg-purple-800"
-          onClick={() => {
-            setChatBot(true);
-          }}
+          onClick={createChatRoom}
         >
           <MessageCircle size={14} />
           <span>Чат</span>
@@ -120,6 +134,7 @@ export const Card = ({ data }: MyProps) => {
           handleFalseClick={() => {
             setChatBot(false);
           }}
+          chatRoomId={chatRoom.OLD_ROOM._id}
         />
       )}
     </div>
