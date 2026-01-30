@@ -38,8 +38,6 @@ export const ChatBot = (props: False) => {
     }
   };
 
-  console.log("CHAT ROOM:", chatRoomId);
-
   useEffect(() => {
     scrollToBottom();
   }, []);
