@@ -6,11 +6,29 @@ type False = {
   handleFalseClick: () => void;
   chatRoomId: string;
 };
+type SenderData = {
+  email: string;
+  _id: string;
+};
+type Messages = {
+  _id: string;
+  chat: string;
+  createdAt: Date;
+  senderId: SenderData;
+  senderName: string;
+  text: string;
+  updatedAt: string;
+};
+
+type Me = {
+  _id: string;
+};
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const ChatBot = (props: False) => {
   const [input, setInput] = useState("");
   const [clerkId, setClerkId] = useState<string | null>(null);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Messages[]>([]);
+  const [me, setMe] = useState<Me | null>(null);
   const { handleFalseClick, chatRoomId } = props;
   const chatId = chatRoomId;
   const [isLoading, setIsLoading] = useState(false);
@@ -32,22 +50,40 @@ export const ChatBot = (props: False) => {
           method: "GET",
         })
       ).json();
-      setMessages(allMessages);
+      setMessages(allMessages.CHAT);
     } catch (err) {
       console.error(err);
     }
   };
-
   useEffect(() => {
     getAllMessages();
   }, []);
 
   console.log("ALL MESSAGES:", messages);
 
+  const getUserByClerkId = async () => {
+    try {
+      const me = await (
+        await fetch(`${BACKEND_URL}/user/clerk/${clerkId}`, {
+          method: "GET",
+        })
+      ).json();
+      setMe(me.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  console.log("ME:", me);
+
+  useEffect(() => {
+    if (clerkId) {
+      getUserByClerkId();
+    }
+  }, [clerkId]);
+
   const sendMessage = async () => {
     if (!clerkId) return;
     try {
-      console.log("CLERKID:", clerkId);
       await fetch(`${BACKEND_URL}/chat/${chatId}/senderId/${clerkId}`, {
         method: "POST",
         headers: {
@@ -62,7 +98,6 @@ export const ChatBot = (props: False) => {
       console.error("SEND MESSAGE ERROR:", err);
     }
   };
-
   useEffect(() => {
     scrollToBottom();
   }, []);
@@ -96,37 +131,40 @@ export const ChatBot = (props: False) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 min-[640px]:p-4 space-y-3 min-[640px]:space-y-4 bg-gray-50 dark:bg-gray-900">
-          {/* {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-2 min-[640px]:gap-3 ${
-                message.role === "user" ? "flex-row-reverse" : ""
-              }`}
-            >
+          {messages.map((message) => {
+            const isMe = clerkId !== me?._id;
+            return (
               <div
-                className={`w-7 h-7 min-[640px]:w-8 min-[640px]:h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  message.role === "user"
-                    ? "bg-blue-500 dark:bg-blue-600"
-                    : "bg-gray-200 dark:bg-gray-700"
+                key={message._id}
+                className={`flex gap-2 min-[640px]:gap-3 ${
+                  isMe ? "flex-row-reverse" : ""
                 }`}
               >
-                {message.role === "user" ? (
-                  <User className="w-3.5 h-3.5 min-[640px]:w-4 min-[640px]:h-4 text-white" />
-                ) : (
-                  <Bot className="w-3.5 h-3.5 min-[640px]:w-4 min-[640px]:h-4 text-gray-600 dark:text-gray-300" />
-                )}
+                <div
+                  className={`w-7 h-7 min-[640px]:w-8 min-[640px]:h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    isMe
+                      ? "bg-blue-500 dark:bg-blue-600"
+                      : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                >
+                  {isMe ? (
+                    <User className="w-3.5 h-3.5 min-[640px]:w-4 min-[640px]:h-4 text-white" />
+                  ) : (
+                    <Bot className="w-3.5 h-3.5 min-[640px]:w-4 min-[640px]:h-4 text-gray-600 dark:text-gray-300" />
+                  )}
+                </div>
+                <div
+                  className={`max-w-[75%] px-3 min-[640px]:px-4 py-2 min-[640px]:py-2.5 rounded-xl min-[640px]:rounded-2xl text-xs min-[640px]:text-sm ${
+                    isMe
+                      ? "bg-blue-500 dark:bg-blue-600 text-white rounded-br-sm min-[640px]:rounded-br-md"
+                      : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-bl-sm min-[640px]:rounded-bl-md"
+                  }`}
+                >
+                  {message.text}
+                </div>
               </div>
-              <div
-                className={`max-w-[75%] px-3 min-[640px]:px-4 py-2 min-[640px]:py-2.5 rounded-xl min-[640px]:rounded-2xl text-xs min-[640px]:text-sm ${
-                  message.role === "user"
-                    ? "bg-blue-500 dark:bg-blue-600 text-white rounded-br-sm min-[640px]:rounded-br-md"
-                    : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-bl-sm min-[640px]:rounded-bl-md"
-                }`}
-              >
-                {message.content}
-              </div>
-            </div>
-          ))} */}
+            );
+          })}
 
           {isLoading && (
             <div className="flex gap-2 min-[640px]:gap-3">
@@ -151,7 +189,6 @@ export const ChatBot = (props: False) => {
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
         <div className="p-3 min-[640px]:p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shrink-0">

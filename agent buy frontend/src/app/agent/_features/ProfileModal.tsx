@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { User, Phone, Mail, Package, CreditCard, Loader2 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 interface ProfileModalProps {
   open: boolean;
@@ -25,7 +26,11 @@ interface ProfileFormData {
   accountNumber: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
+  const { user } = useUser();
+  const clerkId = user?.id;
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
     name: "",
@@ -46,10 +51,22 @@ export const ProfileModal = ({ open, onOpenChange }: ProfileModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
+      await fetch(`${BACKEND_URL}/profile/createProfile/${clerkId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          accountNumber: formData.accountNumber,
+        }),
+      });
       console.log("Profile data:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving profile:", error);

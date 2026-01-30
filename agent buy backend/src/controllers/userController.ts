@@ -39,7 +39,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getUserByClerkId = async (req: Request, res: Response) => {
   try {
     const { clerkId } = req.params;
-    const user = await userModel.findOne({ clerkId });
+    const user = await userModel.findOne({ clerkId: clerkId });
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }

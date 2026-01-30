@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
   createUser,
   getAllUsers,
-  getUserById,
   getUserByClerkId,
+  getUserById,
   setRole,
 } from "../controllers/userController";
 
@@ -28,5 +28,5 @@ userRoute.get("/clerk/:clerkId", getUserByClerkId);
 
 // const userRoute = Router();
 userRoute.put("/setRole/:_id", setRole);
-userRoute.get("/getUserById/:_id", getUserById);
+userRoute.get("/getUserById/:clerkId", getUserById);
 export default userRoute;
