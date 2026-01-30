@@ -11,9 +11,11 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/app/_components/ThemeToggle";
 import { useState } from "react";
+import { ProfileModal } from "./ProfileModal";
 
 export const Header = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   return (
     <header className="w-full h-16 shrink-0 flex items-center px-10 justify-between dark:bg-gray-800">
       <div className="flex items-center gap-2 px-2 py-1 shrink-0">
@@ -54,7 +56,7 @@ export const Header = () => {
                 Username
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Хэрэглэгч
+                Агент
               </span>
             </div>
             <ChevronDown
@@ -76,8 +78,13 @@ export const Header = () => {
                     user@email.com
                   </p>
                 </div>
-
-                <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <button
+                  onClick={() => {
+                    setShowProfileModal(true);
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
                   <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <span className="text-sm text-gray-700 dark:text-gray-200">
                     Миний профайл
@@ -101,6 +108,11 @@ export const Header = () => {
           )}
         </div>
       </div>
+
+      <ProfileModal
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
+      />
     </header>
   );
 };
