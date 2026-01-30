@@ -4,27 +4,25 @@ import { profileModel } from "../models/profileModel";
 import mongoose from "mongoose";
 
 export const createProfile = async (req: Request, res: Response) => {
-  const { name, phone, cargo, accountNumber } = req.body;
-  const { _id } = req.params;
-  if (!_id) return res.status(400).json({ message: "ID NOT FOUND" });
-  if (!mongoose.Types.ObjectId.isValid(_id))
-    return res.status(400).json("INVALID ID FORMAT");
+  const { name, phone, cargo, accountNumber, email } = req.body;
+  const { clerkId } = req.params;
+  if (!clerkId) return res.status(400).json({ message: "ID NOT FOUND" });
   try {
-    const user = await userModel.findById(_id);
+    const user = await userModel.findOne({ clerkId: clerkId });
     if (!user) {
       return res.status(400).json({ message: "USER NOT FOUND" });
     }
     if (user) {
-      await profileModel.create({
+      const userProfile = await profileModel.create({
         userId: user._id,
         name: name,
         phone: phone,
-        email: user.email,
+        email: email,
         cargo: cargo,
         accountNumber: accountNumber,
       });
+      return res.status(200).json({ userProfile });
     }
-    res.status(200).json({ created_profile: user });
   } catch (err) {
     console.error("SERVER_ERROR:", err);
     res.status(500).json({ message: "INTERNAL SERVER ERROR" });
