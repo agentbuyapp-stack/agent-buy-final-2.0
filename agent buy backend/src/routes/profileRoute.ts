@@ -7,7 +7,7 @@ import {
 
 const profileRoute = Router();
 
-profileRoute.post("/createProfile/:_id", createProfile);
+profileRoute.post("/createProfile/:clerkId", createProfile);
 profileRoute.get("/getProfileById/:_id", getProfileById);
 profileRoute.put("/updateProfile/:_id", updateProfile);
 export default profileRoute;

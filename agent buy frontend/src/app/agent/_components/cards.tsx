@@ -12,13 +12,16 @@ type MyProps = {
     _id: string;
   };
 };
+type ChatRoom = {
+  _id: string;
+};
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const Card = ({ data }: MyProps) => {
   const { user } = useUser();
 
-  const [chatRoom, setChatRoom] = useState([]);
+  const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
 
   const createChatRoom = async () => {
     try {
@@ -34,7 +37,7 @@ export const Card = ({ data }: MyProps) => {
           }),
         })
       ).json();
-      setChatRoom(room);
+      setChatRoom(room.OLD_ROOM);
       setChatBot(true);
     } catch (err) {
       console.error(err);
@@ -129,12 +132,12 @@ export const Card = ({ data }: MyProps) => {
         />
       )}
       {priceInf && <PriceInf handleFalsePriceInf={handleFalsePriceInf} />}
-      {chatBot && (
+      {chatBot && chatRoom && (
         <ChatBot
           handleFalseClick={() => {
             setChatBot(false);
           }}
-          chatRoomId={chatRoom.OLD_ROOM._id}
+          chatRoomId={chatRoom._id}
         />
       )}
     </div>
