@@ -17,12 +17,11 @@ export const ChatBot = (props: False) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const clerkId = user?.id;
   console.log("CLERKID:", clerkId);
 
   const sendMessage = async () => {
-    if (clerkId) return;
     try {
       await fetch(`${BACKEND_URL}/chat/${chatId}/senderId/${clerkId}`, {
         method: "POST",
@@ -35,7 +34,7 @@ export const ChatBot = (props: False) => {
         }),
       });
     } catch (err) {
-      console.error(err);
+      console.error("SEND MESSAGE ERROR", err);
     }
   };
 

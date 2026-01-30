@@ -36,6 +36,8 @@ export const getOrCreateChat = async (req: Request, res: Response) => {
 export const sendMessage = async (req: Request, res: Response) => {
   const { chatId, clerkId } = req.params;
   const { text } = req.body;
+  if (!clerkId) return res.status(404).json("CLERKID IS MISSING");
+  if (!chatId) return res.status(404).json("CHATID IS MISSING");
   try {
     const sender = await userModel.findOne({ clerkId: clerkId });
     if (!sender) return res.status(404).json({ messsage: "SENDER NOT FOUND" });
